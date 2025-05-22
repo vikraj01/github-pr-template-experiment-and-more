@@ -1,0 +1,30 @@
+name: Append Commit Message to PR
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  append_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get latest commit
+        id: commit
+        run: |
+          echo "msg=$(git log -1 --pretty=format:'%h - %s (%an)')" >> $GITHUB_OUTPUT
+
+      - name: Update PR description
+        uses: peter-evans/edit-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            ${{ github.event.pull_request.body }}
+
+            ---
+
+            ### Last Commit
+            `${{ steps.commit.outputs.msg }}`
+
